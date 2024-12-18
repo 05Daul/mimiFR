@@ -1,13 +1,21 @@
 server:
   port: 5675
+
 spring:
   application:
     name: mimiFr
 
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/mimi?serverTimezone=Asia/Seoul
+    username: mytest
+    password: 1234
+
 eureka:
   client:
-    register-with-eureka: false
     fetch-registry: false
-  server:
-    #    eviction-interval-timer-in-ms: 3000
-    enable-self-preservation: false
+    register-with-eureka: false
+    service-url:
+      defaultZone: http://127.0.0.1:5677/eureka/
+  instance:
+    lease-expiration-duration-in-seconds: 2
