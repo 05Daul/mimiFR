@@ -1,0 +1,13 @@
+server:
+  port: 5675
+spring:
+  application:
+    name: mimiFr
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  server:
+    #    eviction-interval-timer-in-ms: 3000
+    enable-self-preservation: false
