@@ -26,7 +26,7 @@
         /* 메인 배너 스타일 */
         .main-banner {
             background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
-            url('path/to/your/banner-image.jpg') center/cover;
+            url('static/images/logo.png') center/cover;
             height: 500px;
             color: white;
             display: flex;
@@ -61,7 +61,6 @@
             background-color: #28a745;
             color: white;
         }
-
     </style>
 </head>
 <body>
@@ -71,21 +70,21 @@
             <a class="navbar-brand" href="#">
                 <img src="path/to/your/logo.png" alt="Logo">
             </a>
-
+            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
+            
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="#">홈</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">노트북 대여</a>
+                        <a class="nav-link" th:href="@{/rental/insert}">노트북 대여</a>
                     </li>
                 </ul>
-
+                
                 <div class="d-flex">
                     <button class="btn custom-btn btn-login">로그인</button>
                     <button class="btn custom-btn btn-signup">회원가입</button>
