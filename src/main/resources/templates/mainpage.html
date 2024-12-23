@@ -26,7 +26,7 @@
         /* 메인 배너 스타일 */
         .main-banner {
             background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
-                        url('path/to/your/banner-image.jpg') center/cover;
+            url('path/to/your/banner-image.jpg') center/cover;
             height: 500px;
             color: white;
             display: flex;
@@ -61,6 +61,7 @@
             background-color: #28a745;
             color: white;
         }
+
     </style>
 </head>
 <body>
@@ -70,11 +71,11 @@
             <a class="navbar-brand" href="#">
                 <img src="path/to/your/logo.png" alt="Logo">
             </a>
-            
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
@@ -83,14 +84,8 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#">노트북 대여</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">요금 안내</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">고객지원</a>
-                    </li>
                 </ul>
-                
+
                 <div class="d-flex">
                     <button class="btn custom-btn btn-login">로그인</button>
                     <button class="btn custom-btn btn-signup">회원가입</button>
@@ -103,7 +98,7 @@
     <section class="main-banner">
         <div class="container">
             <div class="banner-content">
-                <h1>최신 노트북을 합리적인 가격으로</h1>
+                <h1> 부트캠프 학습동안에 노트북을 걱정없이 </h1>
                 <p>필요한 기간만큼 원하는 노트북을 대여하세요</p>
                 <button class="btn custom-btn btn-signup">지금 시작하기</button>
             </div>
@@ -112,22 +107,25 @@
 
     <!-- 주요 기능 섹션 -->
     <section class="features py-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 text-center mb-4">
+        <div class="container1 d-flex justify-content-center">
+            <div class="row text-center" style="max-width: 1200px;">
+                <div class="col-md-4 mb-4">
                     <i class="fas fa-laptop fa-3x mb-3"></i>
-                    <h3>다양한 노트북</h3>
-                    <p>최신 모델부터 실무용까지 다양한 선택</p>
+                    <h3>수업에 특화된 <br>노트북</h3>
+                    <p>수업에 특화된 노트북을 대여하세요</p>
                 </div>
-                <div class="col-md-4 text-center mb-4">
+                <div class="col-md-4 mb-4">
                     <i class="fas fa-clock fa-3x mb-3"></i>
-                    <h3>유연한 대여기간</h3>
-                    <p>1일부터 장기 대여까지 자유롭게</p>
+                    <h3>각자에 맞는<br>유연한 대여기간</h3>
+                    <p>단기부터 장기 대여까지,</br> 자유롭게 빌려가세요.</p>
+
+
+
                 </div>
                 <div class="col-md-4 text-center mb-4">
                     <i class="fas fa-shield-alt fa-3x mb-3"></i>
-                    <h3>안전한 거래</h3>
-                    <p>보험 적용 및 안전한 결제 시스템</p>
+                    <h3>수강생에게<br>무료 서비스로</h3>
+                    <p>금액 걱정 없이 여유롭게! </p>
                 </div>
             </div>
         </div>
