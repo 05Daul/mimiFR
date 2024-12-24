@@ -14,7 +14,7 @@
         .navbar {
             padding: 1rem 2rem;
             background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .navbar-brand img {
@@ -25,7 +25,7 @@
             max-width: 800px;
             margin: 50px auto;
             padding: 30px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
         }
 
@@ -58,6 +58,8 @@
             color: white;
         }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 </head>
 <body>
     <!-- 네비게이션 바 -->
@@ -66,11 +68,11 @@
             <a class="navbar-brand" href="#">
                 <img src="/static/images/logo.png" alt="Logo">
             </a>
-            
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
@@ -86,7 +88,7 @@
                         <a class="nav-link" href="#">고객지원</a>
                     </li>
                 </ul>
-                
+
                 <div class="d-flex">
                     <button class="btn custom-btn btn-login">로그인</button>
                     <button class="btn custom-btn btn-signup">회원가입</button>
@@ -105,15 +107,17 @@
                     <div class="mb-4">
                         <h5>대여 품목</h5>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="laptop">
+                            <input class="form-check-input" type="checkbox" name="item" id="laptop"
+                                   value="LAPTOP">
                             <label class="form-check-label" for="laptop">노트북</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="mouse">
+                            <input class="form-check-input" type="checkbox" name="item" id="mouse" value="MOUSE">
                             <label class="form-check-label" for="mouse">마우스</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="charger">
+                            <input class="form-check-input" type="checkbox" name="item" id="charger"
+                                   value="CHARGER">
                             <label class="form-check-label" for="charger">충전기</label>
                         </div>
                     </div>
@@ -123,18 +127,18 @@
                         <h5>대여 기간</h5>
                         <div class="row">
                             <div class="col-md-4">
-                                <label for="startDate" class="form-label">대여일</label>
-                                <input type="date" class="form-control" id="startDate" readonly>
+                                <label for="rentalDate" class="form-label">대여일</label>
+                                <input type="date" class="form-control" name="rentalDate" id="rentalDate" readonly>
                             </div>
                             <div class="col-md-4">
-                                <label for="rentalDays" class="form-label">대여 일수</label>
-                                <select class="form-select" id="rentalDays" required>
+                                <label for="rentalPeriod" class="form-label">대여 일수</label>
+                                <select class="form-select" id="rentalPeriod" name="rentalPeriod" required>
                                     <option value="">선택하세요</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label for="endDate" class="form-label">반납일</label>
-                                <input type="date" class="form-control" id="endDate" readonly>
+                                <label for="dueDate" class="form-label">반납일</label>
+                                <input type="date" class="form-control" id="dueDate" name="dueDate" readonly>
                             </div>
                         </div>
                     </div>
@@ -142,18 +146,15 @@
                     <!-- 대여자 정보 -->
                     <div class="mb-4">
                         <h5>대여자 정보</h5>
+                        <input name="userId" type="hidden">
                         <div class="mb-3">
                             <label for="userName" class="form-label">이름</label>
                             <input type="text" class="form-control" id="userName" readonly>
                         </div>
-                        <div class="mb-3">
-                            <label for="userPhone" class="form-label">전화번호</label>
-                            <input type="tel" class="form-control" id="userPhone" readonly>
-                        </div>
                     </div>
 
                     <div class="text-center">
-                        <button id="rental" type="botton" class="btn btn-submit">대여 신청하기</button>
+                        <button id="rental" type="button" class="btn btn-submit">대여 신청하기</button>
                     </div>
                 </form>
             </div>
@@ -163,20 +164,51 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // 페이지 로드 시 실행될 함수들
-        window.onload = function() {
-            setUserInfo();
+        window.onload = function () {
+            // setUserInfo();
             setTodayDate();
             createDaysOptions();
             rentalsubmit()
         }
-        //form 제출 ajax
-        function rentalsubmit(){
-            $("rental").on("click",function () {
-                let data = {
 
-                }
-            })
-        }
+        //form 제출 ajax
+        function rentalsubmit() {
+            $("#rental").on("click", function () {
+                // name="rentalItem" 체크박스가 선택된 항목 가져오기
+                $("input[name='item']:checked").each(function () {
+                    // 체크된 각 항목의 값을 가져와 개별적으로 AJAX 요청
+                    let data = {
+                        userId: $("#userId").val()||11,
+                        rentalDate: $("#rentalDate").val(),
+                        rentalPeriod: $("#rentalPeriod").val(),
+                        dueDate: $("#dueDate").val(),
+                        item: $(this).val() // 현재 체크된 rentalItem 값
+                    };
+
+                    console.log(data); // 각 요청의 데이터 확인
+
+                    // AJAX 요청 보내기
+                    $.ajax({
+                        type: "POST",
+                        url: "http://127.0.0.1:5676/rental/apply", // 서버 URL
+                        data: JSON.stringify(data),
+                        contentType: "application/json; charset=utf-8", // body 데이터 타입
+                        dataType: "json",
+                    }).done(function (result) { // 요청 성공 시 실행
+                        if (result.status === 200) {
+                            alert("대여 신청 완료: " + data.item);
+                        } else {
+                            alert("대여 신청 실패: " + result.message);
+                        }
+                    }).fail(function (error) { // 요청 실패 시 실행
+                        alert("오류 발생: " + JSON.stringify(error));
+                    }).always(function () { // 요청 결과에 상관없이 항상 실행
+                        console.log("AJAX 요청 완료: " + data.rentalItem);
+                    });
+                });
+            });
+        };
+
         // 토큰에서 사용자 정보를 가져와서 폼에 설정하는 함수
         function setUserInfo() {
             // 토큰에서 사용자 정보를 가져오는 로직 구현 필요
@@ -190,13 +222,13 @@
         function setTodayDate() {
             const today = new Date();
             const formattedDate = today.toISOString().split('T')[0];
-            document.getElementById('startDate').value = formattedDate;
+            document.getElementById('rentalDate').value = formattedDate;
         }
 
         // 대여 일수 옵션 생성
         function createDaysOptions() {
-            const select = document.getElementById('rentalDays');
-            for(let i = 1; i <= 365; i++) {
+            const select = document.getElementById('rentalPeriod');
+            for (let i = 1; i <= 365; i++) {
                 const option = document.createElement('option');
                 option.value = i;
                 option.textContent = `${i}일`;
@@ -205,14 +237,14 @@
         }
 
         // 대여 일수 변경 시 반납일 자동 계산
-        document.getElementById('rentalDays').addEventListener('change', function() {
-            const startDate = new Date(document.getElementById('startDate').value);
+        document.getElementById('rentalPeriod').addEventListener('change', function () {
+            const startDate = new Date(document.getElementById('rentalDate').value);
             const days = parseInt(this.value);
-            
+
             if (days) {
                 const endDate = new Date(startDate);
                 endDate.setDate(startDate.getDate() + days);
-                document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+                document.getElementById('dueDate').value = endDate.toISOString().split('T')[0];
             }
         });
     </script>
