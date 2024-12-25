@@ -1,81 +1,181 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns="http://www.w3.org/1999/html">
 <head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>관리자 페이지</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* 전체 스타일 */
         body {
             font-family: 'Pretendard', sans-serif;
         }
-        /* 추가 스타일 */
+
         .container {
             margin-top: 20px;
         }
+
+        .rentallist {
+            width: 100%;
+            height: 100%;
+            border: 1px;
+            border-style: solid;
+            border-color: black;
+            border-radius: 3px;
+        }
     </style>
+    <script>
+        $(document).ready(function () {
+            // /rental/findall에서 데이터를 가져와 테이블에 표시
+            $.ajax({
+                type: "GET",
+                url: "http://127.0.0.1:5676/rental/findall",
+                dataType: "json",
+                success: function (response) {
+                    console.log(response);
+                    const requestList = $("#requestList");
+                    response.forEach(item => {
+                        const row = `
+                            <tr>
+                                <td>${item.rentalId}</td>
+                                <td>${item.userId}</td>
+                                <td>${item.item}</td>
+                                <td>${item.rentalDate}</td>
+                                <td>${item.rentalPeriod}</td>
+                                 <td>${item.returnDate}</td>
+                                <td>
+                                    <button class="btn btn-primary" onclick="updateRentalWithFilteredData('${item.item}', '${item.userId}','${item.rentalId}')">확인</button>
+                                </td>
+                            </tr>
+                        `;
+                        requestList.append(row);
+                    });
+                }
+            });
+        });
+
+        function updateRentalWithFilteredData(item, userId, rentalId) {
+            // 클릭된 버튼을 가져옵니다.
+            const clickedButton = $(`button[onclick="updateRentalWithFilteredData('${item}', '${userId}', '${rentalId}')"]`);
+
+            // Step 1: /equipment/findAll 요청으로 모든 장비 데이터 가져오기
+            $.ajax({
+                url: "http://127.0.0.1:5676/equipment/findAll",
+                type: "GET",
+                dataType: "json",
+                success: function (equipmentList) {
+                    const categories = ["MOUSE", "LAPTOP", "CHARGER"];
+
+                    // Step 2: JavaScript 내부에서 필터링 처리
+                    const filteredItems = equipmentList.filter(eq =>
+                        categories.includes(eq.category) && eq.category === item && eq.status === "RENTAL"
+                    );
+
+                    if (filteredItems.length === 0) {
+                        alert(`"${item}"이(가) 대여가능 상태가 아닙니다.`);
+                        return;
+                    }
+
+                    // Step 3: mgmNum 업데이트 (첫 번째 매칭 항목만 처리)
+                    const selectedItem = filteredItems[0]; // 매칭된 첫 번째 항목 선택
+                    $.ajax({
+                        url: "http://127.0.0.1:5676/rental/updatemgmnum",
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            rentalId: rentalId,
+                            userId: userId,
+                            mgmNum: selectedItem.mgmNum,
+                        }),
+                        success: function () {
+                            // mgmNum 업데이트 후, 매칭된 항목의 status를 "USING"으로 변경
+                            $.ajax({
+                                url: "http://127.0.0.1:5676/equipment/updateStatus",
+                                type: "POST",
+                                contentType: "application/json",
+                                data: JSON.stringify({
+                                    mgmNum: selectedItem.mgmNum,
+                                    status: "USING", // 상태를 USING으로 변경
+                                }),
+                                success: function () {
+                                    alert(`장비 상태가 "USING"으로 변경되었습니다.`);
+                                    // 버튼을 비활성화하고 텍스트 변경
+                                    clickedButton.prop('disabled', true).text('처리 완료');
+                                },
+                                error: function (error) {
+                                    console.error("장비 상태 업데이트 실패:", error);
+                                }
+                            });
+                        },
+                        error: function (error) {
+                            console.error("Rental 업데이트 실패:", error);
+                        }
+                    });
+                },
+                error: function (error) {
+                    console.error("장비 데이터 로드 실패:", error);
+                }
+            });
+            clickedButton.prop('disabled', true).text('처리 완료');
+
+        }
+
+        function loadRentalData() {
+            $.ajax({
+                type: "GET",
+                url: "http://127.0.0.1:5676/rental/findall",
+                dataType: "json",
+                success: function (response) {
+                    const requestList = $("#requestList");
+                    requestList.empty(); // 기존 데이터를 지우고 새로 추가
+                    response.forEach(item => {
+                        const row = `
+                            <tr>
+                                <td>${item.userId}</td>
+                                <td>${item.item}</td>
+                                <td>${item.rentalDate}</td>
+                                <td>${item.rentalPeriod}</td>
+                                <td>${item.endDate}</td>
+                                <td>
+                                    <button class="btn btn-primary" onclick="updateRentalWithFilteredData('${item.item}', '${item.userId}', '${item.rentalId}','${item.status}')">확인</button>
+
+                                </td>
+                            </tr>
+                        `;
+                        requestList.append(row);
+                    });
+                },
+                error: function (error) {
+                    console.error("Failed to load rental data:", error);
+                }
+            });
+        }
+
+        // 초기 데이터 로드
+        $(document).ready(function () {
+            loadRentalData();
+        });
+    </script>
 </head>
 <body>
     <div class="container">
-        <h1>신청받은 상세정보</h1>
-        <form id="adminForm">
-            <div class="mb-3">
-                <label for="category" class="form-label">카테고리</label>
-                <input type="text" class="form-control" id="category" value="토큰에서 받은 카테고리" readonly>
-            </div>
-            <div class="mb-3">
-                <label for="manageNum" class="form-label">관리 번호</label>
-                <input type="text" class="form-control" id="manageNum" value="토큰에서 받은 관리번호" readonly>
-            </div>
-            <div class="mb-3">
-                <label for="serialNum" class="form-label">시리얼 번호</label>
-                <input type="text" class="form-control" id="serialNum" required>
-            </div>
-            <button type="submit" class="btn btn-primary">확인</button>
-        </form>
-
-        <h2 class="mt-5">신청받은 목록 리스트</h2>
-        <table class="table">
-            <thead>
-            <tr>
-                <th>카테고리</th>
-                <th>관리 번호</th>
-                <th>시리얼 번호</th>
-            </tr>
-            </thead>
-            <tbody id="requestList">
-            <!-- 신청받은 목록이 여기에 추가됩니다. -->
-            </tbody>
-        </table>
+        <h2 class="mt-5"> 목록 리스트</h2>
+        <div class="rentallist">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>유저 아이디</th>
+                    <th>카테고리</th>
+                    <th>대여일</th>
+                    <th>대여기간</th>
+                    <th>반납일</th>
+                    <th>작업</th> <!-- 작업 열 추가 -->
+                </tr>
+                </thead>
+                <tbody id="requestList">
+                </tbody>
+            </table>
+        </div>
     </div>
-
-    <script>
-        document.getElementById('adminForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            // 백엔드에 데이터 전송 로직 추가
-            const category = document.getElementById('category').value;
-            const manageNum = document.getElementById('manageNum').value;
-            const serialNum = document.getElementById('serialNum').value;
-
-            // 예시: AJAX 요청을 통해 데이터 전송
-            // fetch('/api/insert', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json'
-            //     },
-            //     body: JSON.stringify({ category, manageNum, serialNum })
-            // }).then(response => {
-            //     if (response.ok) {
-            //         // 성공적으로 추가된 경우 목록에 추가
-            //         const newRow = `<tr><td>${category}</td><td>${manageNum}</td><td>${serialNum}</td></tr>`;
-            //         document.getElementById('requestList').insertAdjacentHTML('beforeend', newRow);
-            //         // 입력 필드 초기화
-            //         document.getElementById('adminForm').reset();
-            //     }
-            // });
-
-        });
-    </script>
 </body>
 </html>
