@@ -26,7 +26,7 @@
         /* 메인 배너 스타일 */
         .main-banner {
             background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
-            url('static/images/logo.png') center/cover;
+            center/cover;
             height: 500px;
             color: white;
             display: flex;
@@ -61,6 +61,10 @@
             background-color: #28a745;
             color: white;
         }
+        .btn-mypage {
+            background-color: #ffc107;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -69,8 +73,8 @@
     <!-- 네비게이션 바 -->
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
-            <a class="navbar-brand" href="#">
-                <img src="path/to/your/logo.png" alt="Logo">
+            <a class="navbar-brand" href="http://127.0.0.1:5675">
+                <img src="/images/logo.png" alt="Logo">
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -80,19 +84,29 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">홈</a>
+                        <a class="nav-link" href="http://127.0.0.1:5675">홈</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/rental/insert}">노트북 대여</a>
                     </li>
                 </ul>
-                
-                <div class="d-flex">
-                    <button class="btn custom-btn btn-login">로그인</button>
-                    <a th:href="@{/equipment/list}"><button class="btn custom-btn btn-mang">관리자 </button></a>
-                    <button class="btn custom-btn btn-signup">회원가입</button>
+                <div class="d-flex" id="auth-buttons">
+                    <!-- 로그인 버튼과 회원가입 버튼 -->
+                    <button class="btn custom-btn btn-login" id="loginBtn">로그인</button>
+                    <a href="user/insert">
+                        <button class="btn custom-btn btn-signup" id="registerBtn">회원가입</button>
+                    </a>
                 </div>
-            </div>
+                <div class="d-flex" id="mypage-button" style="display: none;">
+                    <!-- 마이페이지 버튼 -->
+                    <a href="/mypage">
+                        <button class="btn custom-btn btn-mypage" id="mypageBtn">마이페이지</button>
+                    </a>
+                    <!-- 로그아웃 버튼 -->
+                    <button class="btn custom-btn btn-danger" id="logoutBtn" style="display: none;">로그아웃</button>
+                    <a th:href="@{/equipment/list}"><button class="btn ">관리자 </button></a>
+
+                </div></div>
         </div>
     </nav>
 
@@ -107,7 +121,7 @@
             </div>
         </div>
     </section>
-
+    <div id="login-modal-container"></div>
     <!-- 주요 기능 섹션 -->
     <section class="features py-5">
         <div class="container1 d-flex justify-content-center">
@@ -132,8 +146,67 @@
                 </div>
             </div>
         </div>
-    </section>
 
+    </section>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // 페이지 로드 시 로그인 상태 확인
+            checkLoginStatus();
+
+
+            // 로그인 버튼 클릭 시 로그인 모달 HTML 불러오기
+            $("#loginBtn").on("click", function() {
+                $.ajax({
+                    url: "/login",  // 로그인 모달 HTML 파일을 불러옵니다.
+                    success: function(data) {
+                        // 로그인 모달을 불러와서 페이지에 추가
+                        $("#login-modal-container").html(data);
+                        // 모달을 열기 (AJAX로 불러온 후 바로 모달 초기화)
+                        var loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                        loginModal.show();
+                    }
+                });
+            });
+
+            // localStorage에 "authToken" 가 있으면 요청헤더에 추가
+            $.ajaxSetup({
+                beforeSend: function(response) {
+                    const authToken = localStorage.getItem("authToken");
+                    const userId = localStorage.getItem("userId");
+                    if (authToken) {
+                        response.setRequestHeader("Authorization", authToken);
+                        response.setRequestHeader("userId", userId);
+                    }
+                }
+            });
+            // 로그아웃 버튼 클릭 시
+            $("#logoutBtn").on("click", function() {
+                // 로컬 스토리지에서 토큰 제거
+                localStorage.removeItem("authToken");
+                localStorage.removeItem("userId");
+
+                location.reload();
+            });
+
+            // 로그인 상태 확인 함수
+            function checkLoginStatus() {
+                if (localStorage.getItem("authToken")) {
+                    // 로그인된 상태라면, 로그인 버튼을 숨기고 마이페이지 버튼과 로그아웃 버튼을 보이게 한다
+                    $("#loginBtn").hide(); // 로그인/회원가입 버튼 숨기기
+                    $("#registerBtn").hide(); // 로그인/회원가입 버튼 숨기기
+                    $("#mypageBtn").show(); // 마이페이지 버튼 보이기
+                    $("#logoutBtn").show(); // 로그아웃 버튼 보이기
+                } else {
+                    // 로그인 안된 상태일 경우
+                    $("#loginBtn").show(); // 로그인/회원가입 버튼 보이기
+                    $("#registerBtn").show(); // 로그인/회원가입 버튼 보이기
+                    $("#mypageBtn").hide(); // 마이페이지 버튼 숨기기
+                    $("#logoutBtn").hide(); // 로그아웃 버튼 숨기기
+                }
+            }
+        });
+    </script>
 </body>
 </html>
