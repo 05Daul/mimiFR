@@ -1,9 +1,20 @@
 package com.example.mimifr.users;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/users")
+@RequestMapping("/user")
 public class usersViewController {
+    @GetMapping("/insert")
+    public String insert(){
+        return "register";
+    }
+
+    @GetMapping("/login")
+    public String login(){
+        return "loginForm";
+    }
+
 }

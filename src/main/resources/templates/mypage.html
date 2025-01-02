@@ -1,6 +1,293 @@
-<html  xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>마이페이지</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <th:block layout:fragment="css">
+        <style>
+            .welcome-message {
+                background-color: #f8f9fa;
+                padding: 2rem;
+                margin-bottom: 2rem;
+                border-radius: 10px;
+                text-align: center;
+            }
+
+            .welcome-message h2 {
+                color: #28a745;
+                margin-bottom: 1rem;
+            }
+
+            .rental-history {
+                background-color: white;
+                padding: 2rem;
+                border-radius: 10px;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            }
+
+            .rental-history h3 {
+                margin-bottom: 1.5rem;
+                color: #333;
+            }
+
+            .table th {
+                background-color: #f8f9fa;
+            }
+
+            .status-badge {
+                padding: 0.5em 1em;
+                border-radius: 20px;
+                font-size: 0.85em;
+                font-weight: 600;
+            }
+
+            .status-using {
+                background-color: #e3f2fd;
+                color: #1976d2;
+            }
+
+            .status-returned {
+                background-color: #e8f5e9;
+                color: #2e7d32;
+            }
+        </style>
+    </th:block>
+</head>
 <body>
-    <body>
-        <h4>마이페이지</h4>
-    </body>
+    <!-- 네비게이션 바 -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="http://127.0.0.1:5675">
+                <img src="/images/logo.png" alt="Logo">
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="http://127.0.0.1:5675">홈</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/rental/insert}">노트북 대여</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <!-- 환영 메시지 -->
+        <div class="welcome-message">
+            <h2><span id="userName">사용자</span>님 환영합니다</h2>
+            <p>대여 현황과 이용 내역을 확인하실 수 있습니다.</p>
+        </div>
+
+        <!-- 대여 목록 -->
+        <div class="rental-history">
+            <h3>대여 목록</h3>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>대여 품목</th>
+                        <th>대여일</th>
+                        <th>대여기간</th>
+                        <th>반납예정일</th>
+                        <th>상태</th>
+                    </tr>
+                    </thead>
+                    <tbody id="rentalList">
+                    <!-- JavaScript로 동적 추가됨 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            // 페이지 로드 시 로그인 상태 확인
+            checkLoginStatus();
+
+
+            // 로그인 버튼 클릭 시 로그인 모달 HTML 불러오기
+            $("#loginBtn").on("click", function () {
+                $.ajax({
+                    url: "/login",  // 로그인 모달 HTML 파일을 불러옵니다.
+                    success: function (data) {
+                        // 로그인 모달을 불러와서 페이지에 추가
+                        $("#login-modal-container").html(data);
+                        // 모달을 열기 (AJAX로 불러온 후 바로 모달 초기화)
+                        var loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                        loginModal.show();
+                    }
+                });
+            });
+
+            // localStorage에 "authToken" 가 있으면 요청헤더에 추가
+            $.ajaxSetup({
+                beforeSend: function (response) {
+                    const authToken = localStorage.getItem("authToken");
+                    const userId = localStorage.getItem("userId");
+                    if (authToken) {
+                        response.setRequestHeader("Authorization", authToken);
+                        response.setRequestHeader("userId", userId);
+                    }
+                }
+            });
+            // 로그아웃 버튼 클릭 시
+            $("#logoutBtn").on("click", function () {
+                // 로컬 스토리지에서 토큰 제거
+                localStorage.removeItem("authToken");
+                localStorage.removeItem("userId");
+
+                location.reload();
+            });
+
+        });
+
+        // 로그인 상태 확인 함수
+        function checkLoginStatus() {
+            if (localStorage.getItem("authToken")) {
+                // 로그인된 상태라면, 로그인 버튼을 숨기고 마이페이지 버튼과 로그아웃 버튼을 보이게 한다
+                $("#loginBtn").hide(); // 로그인/회원가입 버튼 숨기기
+                $("#registerBtn").hide(); // 로그인/회원가입 버튼 숨기기
+                $("#mypageBtn").show(); // 마이페이지 버튼 보이기
+                $("#logoutBtn").show(); // 로그아웃 버튼 보이기
+            } else {
+                // 로그인 안된 상태일 경우
+                $("#loginBtn").show(); // 로그인/회원가입 버튼 보이기
+                $("#registerBtn").show(); // 로그인/회원가입 버튼 보이기
+                $("#mypageBtn").hide(); // 마이페이지 버튼 숨기기
+                $("#logoutBtn").hide(); // 로그아웃 버튼 숨기기
+            }
+        }
+
+    </script>
+
+    <script th:inline="javascript">
+        $(document).ready(function () {
+            loadUserInfo();
+            loadRentalHistory();
+        });
+
+        function loadUserInfo() {
+            // 토큰에서 사용자 정보 가져오기
+            const token = localStorage.getItem('authToken');
+            const id = localStorage.getItem('userId');
+
+            if (token) {
+                // JWT 토큰 디코딩
+                const decodedToken = parseJwt(token);
+                console.log(userName)
+                // 디코딩된 토큰에서 사용자 정보 추출
+                const userName = decodedToken.userName;  // userName 값 추출
+                const role = decodedToken.role;          // role 값 추출
+
+                // 사용자 정보로 HTML 요소 설정
+                document.getElementById('userName').value = userName;  // 예: input에 userName 설정
+                // document.getElementById('role').value = role;          // 예: input에 role 설정
+            } else {
+                console.log("토큰이 존재하지 않습니다.");
+            }
+
+        }
+
+        function parseJwt(token) {
+            // JWT의 두 번째 부분 (payload)은 base64Url로 인코딩되어 있음
+            var base64Url = token.split('.')[1];
+
+            // base64Url -> base64 변환 (URL-safe base64 변환)
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+
+            // base64 디코딩 후, JSON 형태로 변환
+            var jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+
+            // JSON 객체로 반환
+            return JSON.parse(jsonPayload);
+        }
+
+        function loadRentalHistory() {
+            // 현재 로그인한 사용자의 userId 가져오기
+            const token = localStorage.getItem('authToken');
+            const userId = localStorage.getItem('userId');
+
+
+            $.ajax({
+                type: "GET",
+                url: `http://127.0.0.1:5676/rental/findrental/${userId}`,
+                dataType: "json",
+                success: function (userResponse) {
+                    // 성공적으로 사용자 정보 받아온 후
+                    console.log(userResponse);
+                    // userResponse에서 mgmNum을 추출
+                    if (mgmnum != null) {
+                        const mgmNum = userResponse.mgmNum;
+                        // mgmNum을 사용해 두 번째 요청 보내기
+
+                        $.ajax({
+                            type: "GET",
+                            url: `http://127.0.0.1:5676/equipment/findbymgmnum/${mgmNum}`, // mgmNum을 이용하여 대여 내역 조회
+                            dataType: "json",
+                            success: function (rentalResponse) {
+                                // 대여 내역을 처리하고 테이블에 업데이트
+                                const rentalList = $("#rentalList");
+                                rentalList.empty();
+
+
+                                rentalResponse.forEach(item => {
+                                    const formattedRentalDate = new Date(userResponse.rentalDate).toLocaleDateString();
+                                    const formattedDueDate = new Date(userResponse.dueDate).toLocaleDateString();
+
+                                    const row = `
+                                <tr>
+                            <td>${userResponse.item}</td>
+                            <td>${formattedRentalDate}</td>
+                            <td>${userResponse.rentalPeriod}일</td>
+                            <td>${formattedDueDate}</td>
+                            <td>${item.status}</td>
+                                </tr>
+                            `;
+                                    rentalList.append(row);
+                                });
+                            },
+                            error: function (error) {
+                                console.error("Failed to load rental history:", error);
+                                $("#rentalList").html('<tr><td colspan="5" class="text-center">대여 내역을 불러오는데 실패했습니다.</td></tr>');
+                            }
+                        });
+                    } else {
+                        const status ='대여 전';
+                        const formattedRentalDate = new Date(userResponse.rentalDate).toLocaleDateString();
+                        const formattedDueDate = new Date(userResponse.dueDate).toLocaleDateString();
+
+                        const row = `
+                                <tr>
+                            <td>${userResponse.item}</td>
+                            <td>${formattedRentalDate}</td>
+                            <td>${userResponse.rentalPeriod}일</td>
+                            <td>${formattedDueDate}</td>
+                            <td>${status}</td>
+                                </tr>
+                            `;
+                        $("#rentalList").append(row);
+
+                    }
+                },
+                error: function (error) {
+                    console.error("Failed to load user info:", error);
+                    // 사용자 정보를 불러오지 못했을 때 처리
+                    alert("사용자 정보를 불러오는데 실패했습니다.");
+                }
+            });
+        }
+    </script>
+</body>
 </html>
